@@ -1,0 +1,110 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Wounds and Injuries</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        /* Styling to ensure proper display on mobile devices */
+        #pdf-viewer {
+            width: 100%;
+            height: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Horizontally center the canvas */
+            border: 1px solid #ccc;
+        }
+
+        canvas {
+            margin-bottom: 20px;
+        }
+
+        /* For smaller devices, adjust height for responsive design */
+        @media (max-width: 768px) {
+            #pdf-viewer {
+                height: auto; /* Adjust height for mobile devices */
+            }
+
+            canvas {
+                max-width: 100%;
+                height: auto;
+            }
+        }
+    </style>
+    <!-- PDF.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Wounds and Injuries</h1>
+        <a href="../index.html">Back to Home</a>
+    </header>
+    <main>
+        <section data-title="Wounds and Injuries" data-url="wounds-and-injuries.html">
+            <p>First aid for various wounds and injuries.</p>
+
+            <!-- PDF Viewer Container -->
+            <div id="pdf-viewer"></div>
+
+            <!-- Fallback link for downloading the PDF if viewer fails -->
+            <p>If the PDF does not display properly, you can <a href="../Wounds_and_Injuries.pdf" download>download the PDF here</a>.</p>
+        </section>
+    </main>
+
+    <script>
+        var url = '../Wounds_and_Injuries.pdf'; // Path to your PDF file
+
+        var pdfjsLib = window['pdfjs-dist/build/pdf'];
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
+
+        // Load PDF
+        var loadingTask = pdfjsLib.getDocument(url);
+        loadingTask.promise.then(function(pdf) {
+            console.log('PDF loaded');
+
+            // Get the total number of pages in the PDF
+            var totalPages = pdf.numPages;
+
+            // Loop through each page and render it
+            for (let pageNumber = 1; pageNumber <= totalPages; pageNumber++) {
+                renderPage(pdf, pageNumber);
+            }
+        }, function (reason) {
+            // PDF loading error
+            console.error(reason);
+        });
+
+        function renderPage(pdf, pageNumber) {
+            // Fetch the page
+            pdf.getPage(pageNumber).then(function(page) {
+                console.log('Page ' + pageNumber + ' loaded');
+
+                var scale = 1.5;
+                var viewport = page.getViewport({ scale: scale });
+
+                // Prepare canvas using PDF page dimensions
+                var canvas = document.createElement('canvas');
+                var context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                // Append the canvas to the PDF viewer container
+                document.getElementById('pdf-viewer').appendChild(canvas);
+
+                // Render PDF page into canvas context
+                var renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+                var renderTask = page.render(renderContext);
+                renderTask.promise.then(function () {
+                    console.log('Page ' + pageNumber + ' rendered');
+                });
+            });
+        }
+    </script>
+</body>
+</html>
